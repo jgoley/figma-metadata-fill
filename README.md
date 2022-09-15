@@ -2,6 +2,11 @@
 Adds timestamp and current user to annotation component.
 Currently very specific to Green River's design system (must have a frame named "metadata" that contains TextNodes with certain target text strings eg. "Last updated on:").
 
+
+_________________
+
+
+
 Below are the steps to get your plugin running. You can also find instructions at:
 
   https://www.figma.com/plugin-docs/setup/
