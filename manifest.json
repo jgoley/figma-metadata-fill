@@ -1,0 +1,10 @@
+{
+  "name": "Timestamp",
+  "id": "1139602354410770244",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma"
+  ],
+  "permissions": ["currentuser"]
+}
