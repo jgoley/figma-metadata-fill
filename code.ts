@@ -8,21 +8,18 @@ const loadFont = async (fontName) => {
 };
 
 const replaceTargetWithContent = (textNode:TextNode, {type="date"}) => {
-  const content = textNode.characters
   let newContent = ""
   let replacedContent = ""
-  let testString = ""
   let baseString = ""
   if (type === "user") {
-    testString = "Last updated by:"
+    baseString = "Last updated by:"
     replacedContent = figma.currentUser?.name
   } else if (type === "date") {
-    testString = "Last updated on:"
+    baseString = "Last updated on:"
     replacedContent = new Date().toLocaleString()
   }
 
-  if (replacedContent && testString) {
-    baseString = content.substring(0, testString.lastIndexOf(':') + 1);
+  if (replacedContent) {
     newContent = `${baseString} ${replacedContent}`
     textNode.characters = newContent
   }
