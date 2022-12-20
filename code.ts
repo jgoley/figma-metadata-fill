@@ -1,11 +1,23 @@
+const ANNOTATION_COMPONENT_KEY = "2d8635cd6133c6ac76a00b4573386acc1afa9969"
 const page = figma.currentPage
-const selectedFrame = page?.selection[0] as FrameNode;
-const metadataFrameNode = selectedFrame?.children.find((node) => node.name === "metadata") as FrameNode;
-const metadataNodes = metadataFrameNode?.children as TextNode[];
+
+const getMetadataFrame = () => {
+  const selectedFrame = page?.selection[0] as FrameNode;
+  const metadataFrameNode = selectedFrame?.children.find((node) => node.name === "metadata") as FrameNode;
+  return metadataFrameNode?.children as TextNode[];
+}
 
 const loadFont = async (fontName) => {
   await figma.loadFontAsync(fontName);
 };
+
+const getAnnotationComponent = async () => (
+  await figma
+    .importComponentByKeyAsync(ANNOTATION_COMPONENT_KEY)
+    .catch(err => {
+      throw new Error('Team library component import failed.')
+    })
+)
 
 const replaceTargetWithContent = (textNode:TextNode, {type="date"}) => {
   let newContent = ""
@@ -25,17 +37,39 @@ const replaceTargetWithContent = (textNode:TextNode, {type="date"}) => {
   }
 }
 
-if (metadataNodes?.length) {
-  loadFont(metadataNodes[0].fontName).then(() => {
+const updateMetadata = async (componentAdded=false) => {
+  const metadataNodes = getMetadataFrame()
+  return loadFont(metadataNodes[0].fontName).then(() => {
     replaceTargetWithContent(metadataNodes[0], {type: "date"})
     replaceTargetWithContent(metadataNodes[1], {type: "user"})
-    page.selection = []
+    if (componentAdded) {
+      figma.notify("Annotation component added and metadata updated 🛠", {timeout: 3000})
+    } else {
+      figma.notify("Metadata updated ✨", {timeout: 3000})
+    }
   }).catch((error) => {
     console.error(error)
+    figma.notify(`Error in updating metadata: ${error}`, {error: true, timeout: 3000})
   }).finally(() => {
     figma.closePlugin();
   })
-} else {
-  console.error("No frame with metadata is selected.")
-  figma.closePlugin();
 }
+
+getAnnotationComponent().then((annotationComponent) => {
+  if (getMetadataFrame()?.length) {
+    updateMetadata()
+  } else if (annotationComponent) {
+    const instance = annotationComponent.createInstance()
+    const position = figma.viewport.center
+    instance.x = position.x - (instance.width / 2)
+    instance.y = position.y - (instance.height / 2)
+    page.selection = [instance]
+    updateMetadata(true)
+  } else {
+
+  }
+}).catch((error) => {
+  console.error(error)
+  figma.notify(`Error in getting annotation component from library`, {error: true, timeout: 3000})
+  figma.closePlugin();
+})
